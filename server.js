@@ -99,56 +99,57 @@ async function handleCRUD(tableName, req, res, uploadField = null, replaceExisti
             res.status(405).send('Method Not Allowed');
         }
     } catch (error) {
+        console.error("CRUD Error:", error);
         res.status(500).json({ error: error.message });
     }
 }
 
 // Routes using the generic function
-app.post('/taglines', upload.single('tagline_image'), (req, res) => handleCRUD('tagline', req, res, 'tagline_image'));
-app.get('/taglines', (req, res) => handleCRUD('tagline', req, res));
-app.get('/taglines/:id', (req, res) => handleCRUD('tagline', req, res));
-app.put('/taglines/:id', upload.single('tagline_image'), (req, res) => handleCRUD('tagline', req, res, 'tagline_image'));
-app.delete('/taglines/:id', (req, res) => handleCRUD('tagline', req, res));
+app.post('/taglines', upload.single('tagline_image'), (req, res) => handleCRUD('taglines', req, res, 'tagline_image'));
+app.get('/taglines', (req, res) => handleCRUD('taglines', req, res));
+app.get('/taglines/:id', (req, res) => handleCRUD('taglines', req, res));
+app.put('/taglines/:id', upload.single('tagline_image'), (req, res) => handleCRUD('taglines', req, res, 'tagline_image'));
+app.delete('/taglines/:id', (req, res) => handleCRUD('taglines', req, res));
 
 // toservices and testimonials: replace existing
-app.post('/toservices', upload.single('toservice_image'), (req, res) => handleCRUD('toservice', req, res, 'toservice_image', true));
-app.put('/toservices/replace', upload.single('toservice_image'), (req, res) => handleCRUD('toservice', req, res, 'toservice_image', true));
-app.get('/toservices', (req, res) => handleCRUD('toservice', req, res));
+app.post('/toservices', upload.single('toservice_image'), (req, res) => handleCRUD('toservices', req, res, 'toservice_image', true));
+app.put('/toservices/replace', upload.single('toservice_image'), (req, res) => handleCRUD('toservices', req, res, 'toservice_image', true));
+app.get('/toservices', (req, res) => handleCRUD('toservices', req, res));
 
-app.post('/testimonials', upload.single('testimonial_image'), (req, res) => handleCRUD('testimonial', req, res, 'testimonial_image', true));
-app.put('/testimonials/replace', upload.single('testimonial_image'), (req, res) => handleCRUD('testimonial', req, res, 'testimonial_image', true));
-app.get('/testimonials', (req, res) => handleCRUD('testimonial', req, res));
+app.post('/testimonials', upload.single('testimonial_image'), (req, res) => handleCRUD('testimonials', req, res, 'testimonial_image', true));
+app.put('/testimonials/replace', upload.single('testimonial_image'), (req, res) => handleCRUD('testimonials', req, res, 'testimonial_image', true));
+app.get('/testimonials', (req, res) => handleCRUD('testimonials', req, res));
 
-app.post('/clientlogos', upload.single('clientlogo_image'), (req, res) => handleCRUD('clientlogo', req, res, 'clientlogo_image'));
-app.get('/clientlogos', (req, res) => handleCRUD('clientlogo', req, res));
-app.get('/clientlogos/:id', (req, res) => handleCRUD('clientlogo', req, res));
-app.put('/clientlogos/:id', upload.single('clientlogo_image'), (req, res) => handleCRUD('clientlogo', req, res, 'clientlogo_image'));
-app.delete('/clientlogos/:id', (req, res) => handleCRUD('clientlogo', req, res));
+app.post('/clientlogos', upload.single('clientlogo_image'), (req, res) => handleCRUD('clientlogos', req, res, 'clientlogo_image'));
+app.get('/clientlogos', (req, res) => handleCRUD('clientlogos', req, res));
+app.get('/clientlogos/:id', (req, res) => handleCRUD('clientlogos', req, res));
+app.put('/clientlogos/:id', upload.single('clientlogo_image'), (req, res) => handleCRUD('clientlogos', req, res, 'clientlogo_image'));
+app.delete('/clientlogos/:id', (req, res) => handleCRUD('clientlogos', req, res));
 
-app.post('/toinstagrams', upload.single('toinstagram_image'), (req, res) => handleCRUD('toinstagram', req, res, 'toinstagram_image'));
-app.get('/toinstagrams', (req, res) => handleCRUD('toinstagram', req, res));
-app.get('/toinstagrams/:id', (req, res) => handleCRUD('toinstagram', req, res));
-app.put('/toinstagrams/:id', upload.single('toinstagram_image'), (req, res) => handleCRUD('toinstagram', req, res, 'toinstagram_image'));
-app.delete('/toinstagrams/:id', (req, res) => handleCRUD('toinstagram', req, res));
+app.post('/toinstagrams', upload.single('toinstagram_image'), (req, res) => handleCRUD('toinstagrams', req, res, 'toinstagram_image'));
+app.get('/toinstagrams', (req, res) => handleCRUD('toinstagrams', req, res));
+app.get('/toinstagrams/:id', (req, res) => handleCRUD('toinstagrams', req, res));
+app.put('/toinstagrams/:id', upload.single('toinstagram_image'), (req, res) => handleCRUD('toinstagrams', req, res, 'toinstagram_image'));
+app.delete('/toinstagrams/:id', (req, res) => handleCRUD('toinstagrams', req, res));
 
 // New routes for myservice, myportofolio and myblog
-app.post('/myservices', upload.single('myservice_image'), (req, res) => handleCRUD('myservice', req, res, 'myservice_image'));
-app.get('/myservices', (req, res) => handleCRUD('myservice', req, res));
-app.get('/myservices/:id', (req, res) => handleCRUD('myservice', req, res));
-app.put('/myservices/:id', upload.single('myservice_image'), (req, res) => handleCRUD('myservice', req, res, 'myservice_image'));
-app.delete('/myservices/:id', (req, res) => handleCRUD('myservice', req, res));
+app.post('/myservices', upload.single('myservice_image'), (req, res) => handleCRUD('myservices', req, res, 'myservice_image'));
+app.get('/myservices', (req, res) => handleCRUD('myservices', req, res));
+app.get('/myservices/:id', (req, res) => handleCRUD('myservices', req, res));
+app.put('/myservices/:id', upload.single('myservice_image'), (req, res) => handleCRUD('myservices', req, res, 'myservice_image'));
+app.delete('/myservices/:id', (req, res) => handleCRUD('myservices', req, res));
 
-app.post('/myportofolios', upload.single('myportofolio_image'), (req, res) => handleCRUD('myportofolio', req, res, 'myportofolio_image'));
-app.get('/myportofolios', (req, res) => handleCRUD('myportofolio', req, res));
-app.get('/myportofolios/:id', (req, res) => handleCRUD('myportofolio', req, res));
-app.put('/myportofolios/:id', upload.single('myportofolio_image'), (req, res) => handleCRUD('myportofolio', req, res, 'myportofolio_image'));
-app.delete('/myportofolios/:id', (req, res) => handleCRUD('myportofolio', req, res));
+app.post('/myportofolios', upload.single('myportofolio_image'), (req, res) => handleCRUD('myportofolios', req, res, 'myportofolio_image'));
+app.get('/myportofolios', (req, res) => handleCRUD('myportofolios', req, res));
+app.get('/myportofolios/:id', (req, res) => handleCRUD('myportofolios', req, res));
+app.put('/myportofolios/:id', upload.single('myportofolio_image'), (req, res) => handleCRUD('myportofolios', req, res, 'myportofolio_image'));
+app.delete('/myportofolios/:id', (req, res) => handleCRUD('myportofolios', req, res));
 
-app.post('/myblogs', (req, res) => handleCRUD('myblog', req, res));
-app.get('/myblogs', (req, res) => handleCRUD('myblog', req, res));
-app.get('/myblogs/:id', (req, res) => handleCRUD('myblog', req, res));
-app.put('/myblogs/:id', (req, res) => handleCRUD('myblog', req, res));
-app.delete('/myblogs/:id', (req, res) => handleCRUD('myblog', req, res));
+app.post('/myblogs', (req, res) => handleCRUD('myblogs', req, res));
+app.get('/myblogs', (req, res) => handleCRUD('myblogs', req, res));
+app.get('/myblogs/:id', (req, res) => handleCRUD('myblogs', req, res));
+app.put('/myblogs/:id', (req, res) => handleCRUD('myblogs', req, res));
+app.delete('/myblogs/:id', (req, res) => handleCRUD('myblogs', req, res));
 
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
