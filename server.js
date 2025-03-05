@@ -9,9 +9,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
-
 app.use(cors());
-
 app.use(bodyParser.json());
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -63,14 +61,12 @@ async function handleCRUD(tableName, req, res, uploadField = null, replaceExisti
             }
 
             if (replaceExisting) {
-                // Delete existing and insert new
-                const { error: deleteError } = await supabase.from(tableName).delete().neq('id', 0); //delete all rows
+                const { error: deleteError } = await supabase.from(tableName).delete().neq('id', 0);
                 if (deleteError) throw deleteError;
                 const { data: insertData, error: insertError } = await supabase.from(tableName).insert([body]);
                 if (insertError) throw insertError;
                 res.json(insertData);
             } else {
-                // Normal insert or update
                 if (req.method === 'POST') {
                     const { data: insertData, error: insertError } = await supabase.from(tableName).insert([body]);
                     if (insertError) throw insertError;
@@ -134,6 +130,25 @@ app.get('/toinstagrams', (req, res) => handleCRUD('toinstagram', req, res));
 app.get('/toinstagrams/:id', (req, res) => handleCRUD('toinstagram', req, res));
 app.put('/toinstagrams/:id', upload.single('toinstagram_image'), (req, res) => handleCRUD('toinstagram', req, res, 'toinstagram_image'));
 app.delete('/toinstagrams/:id', (req, res) => handleCRUD('toinstagram', req, res));
+
+// New routes for myservice, myportofolio and myblog
+app.post('/myservices', upload.single('myservice_image'), (req, res) => handleCRUD('myservice', req, res, 'myservice_image'));
+app.get('/myservices', (req, res) => handleCRUD('myservice', req, res));
+app.get('/myservices/:id', (req, res) => handleCRUD('myservice', req, res));
+app.put('/myservices/:id', upload.single('myservice_image'), (req, res) => handleCRUD('myservice', req, res, 'myservice_image'));
+app.delete('/myservices/:id', (req, res) => handleCRUD('myservice', req, res));
+
+app.post('/myportofolios', upload.single('myportofolio_image'), (req, res) => handleCRUD('myportofolio', req, res, 'myportofolio_image'));
+app.get('/myportofolios', (req, res) => handleCRUD('myportofolio', req, res));
+app.get('/myportofolios/:id', (req, res) => handleCRUD('myportofolio', req, res));
+app.put('/myportofolios/:id', upload.single('myportofolio_image'), (req, res) => handleCRUD('myportofolio', req, res, 'myportofolio_image'));
+app.delete('/myportofolios/:id', (req, res) => handleCRUD('myportofolio', req, res));
+
+app.post('/myblogs', (req, res) => handleCRUD('myblog', req, res));
+app.get('/myblogs', (req, res) => handleCRUD('myblog', req, res));
+app.get('/myblogs/:id', (req, res) => handleCRUD('myblog', req, res));
+app.put('/myblogs/:id', (req, res) => handleCRUD('myblog', req, res));
+app.delete('/myblogs/:id', (req, res) => handleCRUD('myblog', req, res));
 
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
