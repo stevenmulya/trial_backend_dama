@@ -33,23 +33,19 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 async function uploadFileToSupabase(file, filePath) {
     try {
-        const { data, error } = await supabaseAdmin.storage
+        const { error, data } = await storage
             .from('damabucket')
-            .upload(filePath, file.buffer, {
-                contentType: file.mimetype,
-                upsert: true,
-            });
+            .upload(filePath, file.buffer, { contentType: file.mimetype });
 
         if (error) {
-            console.error("Supabase Storage Upload Error:", error);
-            throw error;
+            console.error('Supabase Storage Error:', error);
+            return null;
         }
-        const publicUrl = supabaseAdmin.storage.from('damabucket').getPublicUrl(filePath).data.publicUrl;
-        console.log("Supabase Public URL:", publicUrl);
-        return publicUrl;
+
+        return `${supabaseUrl}/storage/v1/object/public/projects/${filePath}`;
     } catch (error) {
-        console.error("Supabase Storage Error:", error);
-        throw error;
+        console.error("Error uploading to Supabase Storage:", error);
+        return null;
     }
 }
 
