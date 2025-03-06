@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "vercel-start": "vercel dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -10,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@supabase/storage-js": "^2.7.1",
     "@supabase/supabase-js": "^2.49.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
