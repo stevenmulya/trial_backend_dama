@@ -890,6 +890,8 @@ app.delete('/myblogs/:id', async (req, res) => {
     res.json({ message: 'Blog post deleted', data });
 });
 
+// --------------------- START SERVER ---------------------
+
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
