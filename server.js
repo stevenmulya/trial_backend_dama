@@ -181,7 +181,7 @@ app.post('/toservices', upload.single('toservice_image'), async (req, res) => {
         }
 
         const { data, error } = await supabase
-            .from('toservices')
+            .from('toservice')
             .insert([{ toservice_subtitle, toservice_image }])
             .select();
 
@@ -198,7 +198,7 @@ app.post('/toservices', upload.single('toservice_image'), async (req, res) => {
 // Get all toservices
 app.get('/toservices', async (req, res) => {
     try {
-        const { data, error } = await supabase.from('toservices').select('*');
+        const { data, error } = await supabase.from('toservice').select('*');
 
         if (error) {
             return res.status(400).json({ error: error.message });
@@ -214,7 +214,7 @@ app.get('/toservices', async (req, res) => {
 app.get('/toservices/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { data, error } = await supabase.from('toservices').select('*').eq('id', id).single();
+        const { data, error } = await supabase.from('toservice').select('*').eq('id', id).single();
 
         if (error) {
             return res.status(400).json({ error: error.message });
@@ -244,7 +244,7 @@ app.put('/toservices/:id', upload.single('toservice_image'), async (req, res) =>
         }
 
         const { data, error } = await supabase
-            .from('toservices')
+            .from('toservice')
             .update(updateData)
             .eq('id', id)
             .select();
