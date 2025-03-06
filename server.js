@@ -36,20 +36,22 @@ const bucketName = 'damabucket';
 async function uploadFileToSupabase(file, filePath) {
     try {
         const { data, error } = await supabaseAdmin.storage
-            .from(bucketName)
+            .from('damabucket')
             .upload(filePath, file.buffer, {
                 contentType: file.mimetype,
                 upsert: true,
             });
 
         if (error) {
-            console.error('Supabase Storage Error:', error);
-            return null;
+            console.error("Supabase Storage Upload Error:", error);
+            throw error;
         }
-        return `${supabaseUrl}/storage/v1/object/public/projects/${filePath}`;
+        const publicUrl = supabaseAdmin.storage.from('damabucket').getPublicUrl(filePath).data.publicUrl;
+        console.log("Supabase Public URL:", publicUrl);
+        return publicUrl;
     } catch (error) {
-        console.error("Supabase Upload Error:", error);
-        return null;
+        console.error("Supabase Storage Error:", error);
+        throw error;
     }
 }
 
@@ -599,12 +601,22 @@ app.post('/myservices', upload.single('myservice_image'), async (req, res) => {
     try {
         const { myservice_name, myservice_description, myservice_type } = req.body;
 
+        console.log("Request Body:", req.body);
+        console.log("Request File:", req.file);
+
         let myservice_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            myservice_image = await uploadFileToSupabase(req.file, filePath);
-            if (!myservice_image) {
-                return res.status(500).json({ error: 'Failed to upload image' });
+            try {
+                myservice_image = await uploadFileToSupabase(req.file, filePath);
+                if (!myservice_image) {
+                    console.error("Failed to upload image to Supabase");
+                    return res.status(500).json({ error: 'Failed to upload image to Supabase' });
+                }
+                console.log("Uploaded Image URL:", myservice_image);
+            } catch (uploadError) {
+                console.error("Error in uploadFileToSupabase:", uploadError);
+                return res.status(500).json({ error: 'Failed to upload image to Supabase: ' + uploadError.message });
             }
         }
 
@@ -614,12 +626,14 @@ app.post('/myservices', upload.single('myservice_image'), async (req, res) => {
             .select();
 
         if (error) {
-            return res.status(400).json({ error: error.message });
+            console.error("Supabase Insert Error:", error);
+            return res.status(400).json({ error: 'Supabase Insert Error: ' + error.message });
         }
 
         res.json(data);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("General Error:", error);
+        res.status(500).json({ error: 'General Error: ' + error.message });
     }
 });
 
