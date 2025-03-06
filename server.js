@@ -33,7 +33,7 @@ async function uploadMyPortofolioToSupabase(file, filePath) {
             return null;
         }
 
-        return `${supabaseUrl}/storage/v1/object/public/myportofolios/${filePath}`;
+        return `${supabaseUrl}/storage/v1/object/public/myportofoliobucket/${filePath}`;
     } catch (error) {
         console.error("Error uploading to Supabase Storage:", error);
         return null;
@@ -52,7 +52,7 @@ async function uploadMyServicesToSupabase(file, filePath) {
             return null;
         }
 
-        return `${supabaseUrl}/storage/v1/object/public/myservices/${filePath}`;
+        return `${supabaseUrl}/storage/v1/object/public/myservicesbucket/${filePath}`;
     } catch (error) {
         console.error("Error uploading to Supabase Storage:", error);
         return null;
