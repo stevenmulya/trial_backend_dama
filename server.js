@@ -602,6 +602,11 @@ app.post('/myservices', upload.single('myservice_image'), async (req, res) => {
         console.log("Request Body:", req.body);
         console.log("Request File:", req.file);
 
+        // Validasi input
+        if (!myservice_name) {
+            return res.status(400).json({ error: 'Service name is required' });
+        }
+
         let myservice_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
@@ -618,7 +623,7 @@ app.post('/myservices', upload.single('myservice_image'), async (req, res) => {
             }
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin //use supabaseAdmin to bypass RLS
             .from('myservices')
             .insert([{ myservice_name, myservice_image, myservice_description, myservice_type }])
             .select();
@@ -641,11 +646,13 @@ app.get('/myservices', async (req, res) => {
         const { data, error } = await supabase.from('myservices').select('*');
 
         if (error) {
+            console.error("Supabase Get all Error:", error);
             return res.status(400).json({ error: error.message });
         }
 
         res.json(data);
     } catch (error) {
+        console.error("General Error:", error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -657,11 +664,13 @@ app.get('/myservices/:id', async (req, res) => {
         const { data, error } = await supabase.from('myservices').select('*').eq('id', id).single();
 
         if (error) {
+            console.error("Supabase Get Single Error:", error);
             return res.status(400).json({ error: error.message });
         }
 
         res.json(data);
     } catch (error) {
+        console.error("General Error:", error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -683,18 +692,20 @@ app.put('/myservices/:id', upload.single('myservice_image'), async (req, res) =>
             updateData.myservice_image = myservice_image;
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin //use supabaseAdmin to bypass RLS
             .from('myservices')
             .update(updateData)
             .eq('id', id)
             .select();
 
         if (error) {
+            console.error("Supabase Update Error:", error);
             return res.status(400).json({ error: error.message });
         }
 
         res.json(data);
     } catch (error) {
+        console.error("General Error:", error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -703,18 +714,19 @@ app.put('/myservices/:id', upload.single('myservice_image'), async (req, res) =>
 app.delete('/myservices/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { data, error } = await supabase.from('myservices').delete().eq('id', id);
+        const { data, error } = await supabaseAdmin.from('myservices').delete().eq('id', id); //use supabaseAdmin to bypass RLS
 
         if (error) {
+            console.error("Supabase Delete Error:", error);
             return res.status(400).json({ error: error.message });
         }
 
         res.json({ message: 'Myservice deleted', data });
     } catch (error) {
+        console.error("General Error:", error);
         res.status(500).json({ error: error.message });
     }
 });
-
 // --------------------- MYPORTOFOLIOS CRUD ---------------------
 
 // Create a myportofolio (with image upload)
