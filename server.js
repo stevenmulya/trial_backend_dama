@@ -1,40 +1,31 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 const multer = require('multer');
 const path = require('path');
-const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
+// Supabase Client
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+const storage = supabase.storage;
 
+// Middleware
 app.use(cors({ origin: '*' }));
 app.use(express.json());
-
-if (!supabaseUrl || !supabaseKey || !supabaseServiceKey) {
-    console.error("Supabase URL, Anon Key, or Service Key missing in .env file");
-    process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-    }
-});
 
 // Multer Configuration
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Fungsi untuk mengunggah file ke Supabase Storage
 async function uploadFileToSupabase(file, filePath) {
     try {
         const { error, data } = await storage
-            .from('damabucket')
+            .from('myportofolios')
             .upload(filePath, file.buffer, { contentType: file.mimetype });
 
         if (error) {
@@ -42,7 +33,7 @@ async function uploadFileToSupabase(file, filePath) {
             return null;
         }
 
-        return `${supabaseUrl}/storage/v1/object/public/projects/${filePath}`;
+        return `${supabaseUrl}/storage/v1/object/public/myportofolios/${filePath}`;
     } catch (error) {
         console.error("Error uploading to Supabase Storage:", error);
         return null;
@@ -723,7 +714,8 @@ app.delete('/myservices/:id', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-// --------------------- MYPORTOFOLIOS CRUD ---------------------
+
+// --------------------- MYPORTFOLIOS CRUD ---------------------
 
 // Create a myportofolio (with image upload)
 app.post('/myportofolios', upload.single('myportofolio_image'), async (req, res) => {
@@ -756,33 +748,25 @@ app.post('/myportofolios', upload.single('myportofolio_image'), async (req, res)
 
 // Get all myportofolios
 app.get('/myportofolios', async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('myportofolios').select('*');
+    const { data, error } = await supabase.from('myportofolios').select('*');
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Get a single myportofolio
 app.get('/myportofolios/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('myportofolios').select('*').eq('id', id).single();
+    const { id } = req.params;
+    const { data, error } = await supabase.from('myportofolios').select('*').eq('id', id).single();
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Update a myportofolio (with image upload)
@@ -820,19 +804,16 @@ app.put('/myportofolios/:id', upload.single('myportofolio_image'), async (req, r
 
 // Delete a myportofolio
 app.delete('/myportofolios/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('myportofolios').delete().eq('id', id);
+    const { id } = req.params;
+    const { data, error } = await supabase.from('myportofolios').delete().eq('id', id);
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json({ message: 'Myportofolio deleted', data });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json({ message: 'myportofolio deleted', data });
 });
+
 // --------------------- MYBLOGS CRUD ---------------------
 
 // Create a myblog
