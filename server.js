@@ -70,7 +70,7 @@ app.post('/taglines', upload.single('tagline_image'), async (req, res) => {
         }
 
         const { data, error } = await supabase
-            .from('taglines')
+            .from('tagline')
             .insert([{ tagline_title, tagline_image, tagline_subtitle }])
             .select();
 
@@ -87,7 +87,7 @@ app.post('/taglines', upload.single('tagline_image'), async (req, res) => {
 // Get all taglines
 app.get('/taglines', async (req, res) => {
     try{
-        const { data, error } = await supabase.from('taglines').select('*');
+        const { data, error } = await supabase.from('tagline').select('*');
 
         if (error) {
             return res.status(400).json({ error: error.message });
@@ -103,7 +103,7 @@ app.get('/taglines', async (req, res) => {
 app.get('/taglines/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { data, error } = await supabase.from('taglines').select('*').eq('id', id).single();
+        const { data, error } = await supabase.from('tagline').select('*').eq('id', id).single();
 
         if (error) {
             return res.status(400).json({ error: error.message });
@@ -133,7 +133,7 @@ app.put('/taglines/:id', upload.single('tagline_image'), async (req, res) => {
         }
 
         const { data, error } = await supabase
-            .from('taglines')
+            .from('tagline')
             .update(updateData)
             .eq('id', id)
             .select();
@@ -152,7 +152,7 @@ app.put('/taglines/:id', upload.single('tagline_image'), async (req, res) => {
 app.delete('/taglines/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { data, error } = await supabase.from('taglines').delete().eq('id', id);
+        const { data, error } = await supabase.from('tagline').delete().eq('id', id);
 
         if (error) {
             return res.status(400).json({ error: error.message });
