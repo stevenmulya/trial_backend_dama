@@ -40,6 +40,25 @@ async function uploadFileToSupabase(file, filePath) {
     }
 }
 
+// Fungsi untuk mengunggah file ke Supabase Storage
+async function uploadFileToSupabase(file, filePath) {
+    try {
+        const { error, data } = await storage
+            .from('myservicesbucket')
+            .upload(filePath, file.buffer, { contentType: file.mimetype });
+
+        if (error) {
+            console.error('Supabase Storage Error:', error);
+            return null;
+        }
+
+        return `${supabaseUrl}/storage/v1/object/public/myservices/${filePath}`;
+    } catch (error) {
+        console.error("Error uploading to Supabase Storage:", error);
+        return null;
+    }
+}
+
 // --------------------- TAGLINES CRUD ---------------------
 
 // Create a tagline (with image upload)
