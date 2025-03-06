@@ -59,6 +59,25 @@ async function uploadMyServicesToSupabase(file, filePath) {
     }
 }
 
+// Fungsi untuk mengunggah MyBlog ke Supabase Storage
+async function uploadMyBlogToSupabase(file, filePath) {
+    try {
+        const { error, data } = await storage
+            .from('myblogbucket')
+            .upload(filePath, file.buffer, { contentType: file.mimetype });
+
+        if (error) {
+            console.error('Supabase Storage Error:', error);
+            return null;
+        }
+
+        return `${supabaseUrl}/storage/v1/object/public/myblogbucket/${filePath}`;
+    } catch (error) {
+        console.error("Error uploading to Supabase Storage:", error);
+        return null;
+    }
+}
+
 // --------------------- TAGLINES CRUD ---------------------
 
 // Create a tagline (with image upload)
@@ -797,16 +816,25 @@ app.delete('/myportofolios/:id', async (req, res) => {
     res.json({ message: 'myportofolio deleted', data });
 });
 
-// --------------------- MYBLOGS CRUD ---------------------
+// --------------------- MYBLOG CRUD ---------------------
 
-// Create a myblog
-app.post('/myblogs', async (req, res) => {
+// Create a blog post (with image upload)
+app.post('/myblogs', upload.single('myblog_image'), async (req, res) => {
     try {
-        const { myblog_title, myblog_author, myblog_date, myblog_content } = req.body;
+        const { myblog_title, myblog_content, myblog_date } = req.body;
+
+        let myblog_image = null;
+        if (req.file) {
+            const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
+            myblog_image = await uploadMyBlogToSupabase(req.file, filePath);
+            if (!myblog_image) {
+                return res.status(500).json({ error: 'Failed to upload image' });
+            }
+        }
 
         const { data, error } = await supabase
             .from('myblogs')
-            .insert([{ myblog_title, myblog_author, myblog_date, myblog_content }])
+            .insert([{ myblog_title, myblog_image, myblog_content, myblog_date }])
             .select();
 
         if (error) {
@@ -819,46 +847,49 @@ app.post('/myblogs', async (req, res) => {
     }
 });
 
-// Get all myblogs
+// Get all blog posts
 app.get('/myblogs', async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('myblogs').select('*');
+    const { data, error } = await supabase.from('myblogs').select('*');
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
-// Get a single myblog
+// Get a single blog post
 app.get('/myblogs/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('myblogs').select('*').eq('id', id).single();
+    const { id } = req.params;
+    const { data, error } = await supabase.from('myblogs').select('*').eq('id', id).single();
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
-// Update a myblog
-app.put('/myblogs/:id', async (req, res) => {
+// Update a blog post (with image upload)
+app.put('/myblogs/:id', upload.single('myblog_image'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { myblog_title, myblog_author, myblog_date, myblog_content } = req.body;
+        const { myblog_title, myblog_content, myblog_date } = req.body;
+
+        let updateData = { myblog_title, myblog_content, myblog_date };
+
+        if (req.file) {
+            const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
+            const myblog_image = await uploadMyBlogToSupabase(req.file, filePath);
+            if (!myblog_image) {
+                return res.status(500).json({ error: 'Failed to upload image' });
+            }
+            updateData.myblog_image = myblog_image;
+        }
 
         const { data, error } = await supabase
             .from('myblogs')
-            .update({ myblog_title, myblog_author, myblog_date, myblog_content })
+            .update(updateData)
             .eq('id', id)
             .select();
 
@@ -872,20 +903,16 @@ app.put('/myblogs/:id', async (req, res) => {
     }
 });
 
-// Delete a myblog
+// Delete a blog post
 app.delete('/myblogs/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('myblogs').delete().eq('id', id);
+    const { id } = req.params;
+    const { data, error } = await supabase.from('myblogs').delete().eq('id', id);
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json({ message: 'Myblog deleted', data });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json({ message: 'Blog post deleted', data });
 });
 
 app.listen(port, () => {
