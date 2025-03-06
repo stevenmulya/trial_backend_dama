@@ -605,80 +605,51 @@ app.post('/myservices', upload.single('myservice_image'), async (req, res) => {
     try {
         const { myservice_name, myservice_description, myservice_type } = req.body;
 
-        console.log("Request Body:", req.body);
-        console.log("Request File:", req.file);
-
-        // Validasi input
-        if (!myservice_name) {
-            return res.status(400).json({ error: 'Service name is required' });
-        }
-
         let myservice_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            try {
-                myservice_image = await uploadFileToSupabase(req.file, filePath);
-                if (!myservice_image) {
-                    console.error("Failed to upload image to Supabase");
-                    return res.status(500).json({ error: 'Failed to upload image to Supabase' });
-                }
-                console.log("Uploaded Image URL:", myservice_image);
-            } catch (uploadError) {
-                console.error("Error in uploadFileToSupabase:", uploadError);
-                return res.status(500).json({ error: 'Failed to upload image to Supabase: ' + uploadError.message });
+            myservice_image = await uploadFileToSupabase(req.file, filePath);
+            if (!myservice_image) {
+                return res.status(500).json({ error: 'Failed to upload image' });
             }
         }
 
-        const { data, error } = await supabaseAdmin //use supabaseAdmin to bypass RLS
+        const { data, error } = await supabase
             .from('myservices')
             .insert([{ myservice_name, myservice_image, myservice_description, myservice_type }])
             .select();
 
         if (error) {
-            console.error("Supabase Insert Error:", error);
-            return res.status(400).json({ error: 'Supabase Insert Error: ' + error.message });
+            return res.status(400).json({ error: error.message });
         }
 
         res.json(data);
     } catch (error) {
-        console.error("General Error:", error);
-        res.status(500).json({ error: 'General Error: ' + error.message });
+        res.status(500).json({ error: error.message });
     }
 });
 
 // Get all myservices
 app.get('/myservices', async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('myservices').select('*');
+    const { data, error } = await supabase.from('myservices').select('*');
 
-        if (error) {
-            console.error("Supabase Get all Error:", error);
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        console.error("General Error:", error);
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Get a single myservice
 app.get('/myservices/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('myservices').select('*').eq('id', id).single();
+    const { id } = req.params;
+    const { data, error } = await supabase.from('myservices').select('*').eq('id', id).single();
 
-        if (error) {
-            console.error("Supabase Get Single Error:", error);
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        console.error("General Error:", error);
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Update a myservice (with image upload)
@@ -698,41 +669,34 @@ app.put('/myservices/:id', upload.single('myservice_image'), async (req, res) =>
             updateData.myservice_image = myservice_image;
         }
 
-        const { data, error } = await supabaseAdmin //use supabaseAdmin to bypass RLS
+        const { data, error } = await supabase
             .from('myservices')
             .update(updateData)
             .eq('id', id)
             .select();
 
         if (error) {
-            console.error("Supabase Update Error:", error);
             return res.status(400).json({ error: error.message });
         }
 
         res.json(data);
     } catch (error) {
-        console.error("General Error:", error);
         res.status(500).json({ error: error.message });
     }
 });
 
 // Delete a myservice
 app.delete('/myservices/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabaseAdmin.from('myservices').delete().eq('id', id); //use supabaseAdmin to bypass RLS
+    const { id } = req.params;
+    const { data, error } = await supabase.from('myservices').delete().eq('id', id);
 
-        if (error) {
-            console.error("Supabase Delete Error:", error);
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json({ message: 'Myservice deleted', data });
-    } catch (error) {
-        console.error("General Error:", error);
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json({ message: 'myservice deleted', data });
 });
+
 
 // --------------------- MYPORTFOLIOS CRUD ---------------------
 
