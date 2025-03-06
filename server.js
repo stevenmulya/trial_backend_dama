@@ -25,7 +25,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 async function uploadFileToSupabase(file, filePath) {
     try {
         const { error, data } = await storage
-            .from('myportofolios')
+            .from('damabucket')
             .upload(filePath, file.buffer, { contentType: file.mimetype });
 
         if (error) {
