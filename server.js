@@ -21,11 +21,11 @@ app.use(express.json());
 // Multer Configuration
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Fungsi untuk mengunggah file ke Supabase Storage
-async function uploadFileToSupabase(file, filePath) {
+// Fungsi untuk mengunggah MyPortofolio ke Supabase Storage
+async function uploadMyPortofolioToSupabase(file, filePath) {
     try {
         const { error, data } = await storage
-            .from('damabucket')
+            .from('myportofoliobucket')
             .upload(filePath, file.buffer, { contentType: file.mimetype });
 
         if (error) {
@@ -40,8 +40,8 @@ async function uploadFileToSupabase(file, filePath) {
     }
 }
 
-// Fungsi untuk mengunggah file ke Supabase Storage
-async function uploadFileToSupabase(file, filePath) {
+// Fungsi untuk mengunggah MyServices ke Supabase Storage
+async function uploadMyServicesToSupabase(file, filePath) {
     try {
         const { error, data } = await storage
             .from('myservicesbucket')
@@ -608,7 +608,7 @@ app.post('/myservices', upload.single('myservice_image'), async (req, res) => {
         let myservice_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            myservice_image = await uploadFileToSupabase(req.file, filePath);
+            myservice_image = await uploadMyServicesToSupabase(req.file, filePath);
             if (!myservice_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -662,7 +662,7 @@ app.put('/myservices/:id', upload.single('myservice_image'), async (req, res) =>
 
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            const myservice_image = await uploadFileToSupabase(req.file, filePath);
+            const myservice_image = await uploadMyServicesToSupabase(req.file, filePath);
             if (!myservice_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -708,7 +708,7 @@ app.post('/myportofolios', upload.single('myportofolio_image'), async (req, res)
         let myportofolio_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            myportofolio_image = await uploadFileToSupabase(req.file, filePath);
+            myportofolio_image = await uploadMyPortofolioToSupabase(req.file, filePath);
             if (!myportofolio_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -762,7 +762,7 @@ app.put('/myportofolios/:id', upload.single('myportofolio_image'), async (req, r
 
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            const myportofolio_image = await uploadFileToSupabase(req.file, filePath);
+            const myportofolio_image = await uploadMyPortofolioToSupabase(req.file, filePath);
             if (!myportofolio_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
