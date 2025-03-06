@@ -82,7 +82,7 @@ async function uploadMyBlogToSupabase(file, filePath) {
 async function uploadFileToSupabase(file, filePath) {
     try {
         const { error, data } = await storage
-            .from(myhomebucket)
+            .from('myhomebucket')
             .upload(filePath, file.buffer, { contentType: file.mimetype });
 
         if (error) {
