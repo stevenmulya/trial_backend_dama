@@ -78,7 +78,26 @@ async function uploadMyBlogToSupabase(file, filePath) {
     }
 }
 
-// --------------------- TAGLINES CRUD ---------------------
+// Fungsi untuk mengunggah file ke Supabase Storage
+async function uploadFileToSupabase(file, filePath) {
+    try {
+        const { error, data } = await storage
+            .from(myhomebucket)
+            .upload(filePath, file.buffer, { contentType: file.mimetype });
+
+        if (error) {
+            console.error('Supabase Storage Error:', error);
+            return null;
+        }
+
+        return `${supabaseUrl}/storage/v1/object/public/myhomebucket/${filePath}`;
+    } catch (error) {
+        console.error("Error uploading to Supabase Storage:", error);
+        return null;
+    }
+}
+
+// --------------------- TAGLINE CRUD ---------------------
 
 // Create a tagline (with image upload)
 app.post('/taglines', upload.single('tagline_image'), async (req, res) => {
@@ -88,15 +107,15 @@ app.post('/taglines', upload.single('tagline_image'), async (req, res) => {
         let tagline_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            tagline_image = await uploadFileToSupabase(req.file, filePath);
+            tagline_image = await uploadFileToSupabase(req.file, filePath, 'taglines');
             if (!tagline_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
         }
 
         const { data, error } = await supabase
-            .from('tagline')
-            .insert([{ tagline_title, tagline_image, tagline_subtitle }])
+            .from('taglines')
+            .insert([{ tagline_image, tagline_title, tagline_subtitle }])
             .select();
 
         if (error) {
@@ -111,33 +130,25 @@ app.post('/taglines', upload.single('tagline_image'), async (req, res) => {
 
 // Get all taglines
 app.get('/taglines', async (req, res) => {
-    try{
-        const { data, error } = await supabase.from('tagline').select('*');
+    const { data, error } = await supabase.from('taglines').select('*');
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({error: error.message});
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Get a single tagline
 app.get('/taglines/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('tagline').select('*').eq('id', id).single();
+    const { id } = req.params;
+    const { data, error } = await supabase.from('taglines').select('*').eq('id', id).single();
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({error: error.message});
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Update a tagline (with image upload)
@@ -150,7 +161,7 @@ app.put('/taglines/:id', upload.single('tagline_image'), async (req, res) => {
 
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            const tagline_image = await uploadFileToSupabase(req.file, filePath);
+            const tagline_image = await uploadFileToSupabase(req.file, filePath, 'taglines');
             if (!tagline_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -158,7 +169,7 @@ app.put('/taglines/:id', upload.single('tagline_image'), async (req, res) => {
         }
 
         const { data, error } = await supabase
-            .from('tagline')
+            .from('taglines')
             .update(updateData)
             .eq('id', id)
             .select();
@@ -175,21 +186,17 @@ app.put('/taglines/:id', upload.single('tagline_image'), async (req, res) => {
 
 // Delete a tagline
 app.delete('/taglines/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('tagline').delete().eq('id', id);
+    const { id } = req.params;
+    const { data, error } = await supabase.from('taglines').delete().eq('id', id);
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json({ message: 'Tagline deleted', data });
-    } catch (error) {
-        res.status(500).json({error: error.message});
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json({ message: 'Tagline deleted', data });
 });
 
-// --------------------- TOSERVICES CRUD (No Delete) ---------------------
+// --------------------- TOSERVICE CRUD ---------------------
 
 // Create a toservice (with image upload)
 app.post('/toservices', upload.single('toservice_image'), async (req, res) => {
@@ -199,15 +206,15 @@ app.post('/toservices', upload.single('toservice_image'), async (req, res) => {
         let toservice_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            toservice_image = await uploadFileToSupabase(req.file, filePath);
+            toservice_image = await uploadFileToSupabase(req.file, filePath, 'toservices');
             if (!toservice_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
         }
 
         const { data, error } = await supabase
-            .from('toservice')
-            .insert([{ toservice_subtitle, toservice_image }])
+            .from('toservices')
+            .insert([{ toservice_image, toservice_subtitle }])
             .select();
 
         if (error) {
@@ -222,33 +229,25 @@ app.post('/toservices', upload.single('toservice_image'), async (req, res) => {
 
 // Get all toservices
 app.get('/toservices', async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('toservice').select('*');
+    const { data, error } = await supabase.from('toservices').select('*');
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Get a single toservice
 app.get('/toservices/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('toservice').select('*').eq('id', id).single();
+    const { id } = req.params;
+    const { data, error } = await supabase.from('toservices').select('*').eq('id', id).single();
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Update a toservice (with image upload)
@@ -261,7 +260,7 @@ app.put('/toservices/:id', upload.single('toservice_image'), async (req, res) =>
 
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            const toservice_image = await uploadFileToSupabase(req.file, filePath);
+            const toservice_image = await uploadFileToSupabase(req.file, filePath, 'toservices');
             if (!toservice_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -269,7 +268,7 @@ app.put('/toservices/:id', upload.single('toservice_image'), async (req, res) =>
         }
 
         const { data, error } = await supabase
-            .from('toservice')
+            .from('toservices')
             .update(updateData)
             .eq('id', id)
             .select();
@@ -284,6 +283,18 @@ app.put('/toservices/:id', upload.single('toservice_image'), async (req, res) =>
     }
 });
 
+// Delete a toservice
+app.delete('/toservices/:id', async (req, res) => {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('toservices').delete().eq('id', id);
+
+    if (error) {
+        return res.status(400).json({ error: error.message });
+    }
+
+    res.json({ message: 'ToService deleted', data });
+});
+
 // --------------------- CLIENTLOGOS CRUD ---------------------
 
 // Create a clientlogo (with image upload)
@@ -294,7 +305,7 @@ app.post('/clientlogos', upload.single('clientlogo_image'), async (req, res) => 
         let clientlogo_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            clientlogo_image = await uploadFileToSupabase(req.file, filePath);
+            clientlogo_image = await uploadFileToSupabase(req.file, filePath, 'clientlogos');
             if (!clientlogo_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -302,7 +313,7 @@ app.post('/clientlogos', upload.single('clientlogo_image'), async (req, res) => 
 
         const { data, error } = await supabase
             .from('clientlogos')
-            .insert([{ clientlogo_name, clientlogo_image, clientlogo_link }])
+            .insert([{ clientlogo_image, clientlogo_name, clientlogo_link }])
             .select();
 
         if (error) {
@@ -317,33 +328,25 @@ app.post('/clientlogos', upload.single('clientlogo_image'), async (req, res) => 
 
 // Get all clientlogos
 app.get('/clientlogos', async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('clientlogos').select('*');
+    const { data, error } = await supabase.from('clientlogos').select('*');
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Get a single clientlogo
 app.get('/clientlogos/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('clientlogos').select('*').eq('id', id).single();
+    const { id } = req.params;
+    const { data, error } = await supabase.from('clientlogos').select('*').eq('id', id).single();
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Update a clientlogo (with image upload)
@@ -356,7 +359,7 @@ app.put('/clientlogos/:id', upload.single('clientlogo_image'), async (req, res) 
 
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            const clientlogo_image = await uploadFileToSupabase(req.file, filePath);
+            const clientlogo_image = await uploadFileToSupabase(req.file, filePath, 'clientlogos');
             if (!clientlogo_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -381,21 +384,17 @@ app.put('/clientlogos/:id', upload.single('clientlogo_image'), async (req, res) 
 
 // Delete a clientlogo
 app.delete('/clientlogos/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('clientlogos').delete().eq('id', id);
+    const { id } = req.params;
+    const { data, error } = await supabase.from('clientlogos').delete().eq('id', id);
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json({ message: 'Clientlogo deleted', data });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json({ message: 'ClientLogo deleted', data });
 });
 
-// --------------------- TESTIMONIALS CRUD ---------------------
+// --------------------- TESTIMONIAL CRUD ---------------------
 
 // Create a testimonial (with image upload)
 app.post('/testimonials', upload.single('testimonial_image'), async (req, res) => {
@@ -405,7 +404,7 @@ app.post('/testimonials', upload.single('testimonial_image'), async (req, res) =
         let testimonial_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            testimonial_image = await uploadFileToSupabase(req.file, filePath);
+            testimonial_image = await uploadFileToSupabase(req.file, filePath, 'testimonials');
             if (!testimonial_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -413,7 +412,7 @@ app.post('/testimonials', upload.single('testimonial_image'), async (req, res) =
 
         const { data, error } = await supabase
             .from('testimonials')
-            .insert([{ testimonial_text, testimonial_image, testimonial_name }])
+            .insert([{ testimonial_image, testimonial_text, testimonial_name }])
             .select();
 
         if (error) {
@@ -428,33 +427,25 @@ app.post('/testimonials', upload.single('testimonial_image'), async (req, res) =
 
 // Get all testimonials
 app.get('/testimonials', async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('testimonials').select('*');
+    const { data, error } = await supabase.from('testimonials').select('*');
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Get a single testimonial
 app.get('/testimonials/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('testimonials').select('*').eq('id', id).single();
+    const { id } = req.params;
+    const { data, error } = await supabase.from('testimonials').select('*').eq('id', id).single();
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Update a testimonial (with image upload)
@@ -467,7 +458,7 @@ app.put('/testimonials/:id', upload.single('testimonial_image'), async (req, res
 
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            const testimonial_image = await uploadFileToSupabase(req.file, filePath);
+            const testimonial_image = await uploadFileToSupabase(req.file, filePath, 'testimonials');
             if (!testimonial_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -492,21 +483,17 @@ app.put('/testimonials/:id', upload.single('testimonial_image'), async (req, res
 
 // Delete a testimonial
 app.delete('/testimonials/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('testimonials').delete().eq('id', id);
+    const { id } = req.params;
+    const { data, error } = await supabase.from('testimonials').delete().eq('id', id);
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json({ message: 'Testimonial deleted', data });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json({ message: 'Testimonial deleted', data });
 });
 
-// --------------------- TOINSTAGRAMS CRUD ---------------------
+// --------------------- TOINSTAGRAM CRUD ---------------------
 
 // Create a toinstagram (with image upload)
 app.post('/toinstagrams', upload.single('toinstagram_image'), async (req, res) => {
@@ -516,7 +503,7 @@ app.post('/toinstagrams', upload.single('toinstagram_image'), async (req, res) =
         let toinstagram_image = null;
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            toinstagram_image = await uploadFileToSupabase(req.file, filePath);
+            toinstagram_image = await uploadFileToSupabase(req.file, filePath, 'toinstagrams');
             if (!toinstagram_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -524,7 +511,7 @@ app.post('/toinstagrams', upload.single('toinstagram_image'), async (req, res) =
 
         const { data, error } = await supabase
             .from('toinstagrams')
-            .insert([{ toinstagram_name, toinstagram_image, toinstagram_link }])
+            .insert([{ toinstagram_image, toinstagram_name, toinstagram_link }])
             .select();
 
         if (error) {
@@ -539,33 +526,25 @@ app.post('/toinstagrams', upload.single('toinstagram_image'), async (req, res) =
 
 // Get all toinstagrams
 app.get('/toinstagrams', async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('toinstagrams').select('*');
+    const { data, error } = await supabase.from('toinstagrams').select('*');
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Get a single toinstagram
 app.get('/toinstagrams/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('toinstagrams').select('*').eq('id', id).single();
+    const { id } = req.params;
+    const { data, error } = await supabase.from('toinstagrams').select('*').eq('id', id).single();
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json(data);
 });
 
 // Update a toinstagram (with image upload)
@@ -578,7 +557,7 @@ app.put('/toinstagrams/:id', upload.single('toinstagram_image'), async (req, res
 
         if (req.file) {
             const filePath = `${Date.now()}${path.extname(req.file.originalname)}`;
-            const toinstagram_image = await uploadFileToSupabase(req.file, filePath);
+            const toinstagram_image = await uploadFileToSupabase(req.file, filePath, 'toinstagrams');
             if (!toinstagram_image) {
                 return res.status(500).json({ error: 'Failed to upload image' });
             }
@@ -603,18 +582,14 @@ app.put('/toinstagrams/:id', upload.single('toinstagram_image'), async (req, res
 
 // Delete a toinstagram
 app.delete('/toinstagrams/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase.from('toinstagrams').delete().eq('id', id);
+    const { id } = req.params;
+    const { data, error } = await supabase.from('toinstagrams').delete().eq('id', id);
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
-
-        res.json({ message: 'Toinstagram deleted', data });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (error) {
+        return res.status(400).json({ error: error.message });
     }
+
+    res.json({ message: 'ToInstagram deleted', data });
 });
 
 // --------------------- MYSERVICES CRUD ---------------------
