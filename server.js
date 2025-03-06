@@ -43,9 +43,10 @@ async function uploadFileToSupabase(file, filePath) {
             });
 
         if (error) {
-            throw error;
+            console.error('Supabase Storage Error:', error);
+            return null;
         }
-        return supabaseAdmin.storage.from(bucketName).getPublicUrl(filePath).data.publicUrl;
+        return `${supabaseUrl}/storage/v1/object/public/projects/${filePath}`;
     } catch (error) {
         console.error("Supabase Upload Error:", error);
         return null;
